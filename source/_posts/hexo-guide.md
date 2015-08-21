@@ -53,6 +53,7 @@ $ npm install  # 视情况使用 sudo
 
 ```bash
 language: zh-Hans               # 注意，是 zh-Hans
+
 url: http://oneblog.top         
 root: /                         
 # 如果url是http://oneblog.top/public，则root变为/public/
@@ -60,6 +61,7 @@ root: /
 # location /public {
 #     root /opt/hexo/myblog;     # 内容文件放在 /opt/hexo/myblog/public 目录下   
 # }
+
 theme: next
 ```
 
@@ -69,9 +71,11 @@ next主题根目录的_config.yml，主要参数配置说明如下：
 
 ```bash
 scheme: Mist            # 页眉样式切换
+
 sidebar: post           # 在post文档有章节目录需要显示时，自动展示sidebar
 #sidebar: always        # 总是显示sidebar
 #sidebar: hide          # 总是隐藏sidebar
+
 auto_excerpt:           # 仅显示文章摘要，否则会在首页上显示每篇文章的完整内容，可能导致页面非常长。
   enable: true
   length: 300
@@ -104,7 +108,7 @@ categories:
 目前可能会用到的hexo命令，如下：
 
 ```bash
-$ hexo clean              # 当文档没有正常被更新时
+$ hexo clean              # 当文档没有正常被更新时，用该命令清除缓存
 $ hexo list <type>        # type: post page route tag
 $ hexo version
 $ hexo --safe             # Disables loading plugins and scripts.查找错误时使用
