@@ -25,6 +25,8 @@ Node.js + Git，建议将hexo运行环境配置和文档内容都保存在Github
 $ npm install -g hexo-cli
 ```
 
+<!-- more -->
+
 ### 初始化工作目录
 
 ```bash

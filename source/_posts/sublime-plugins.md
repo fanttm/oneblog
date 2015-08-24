@@ -31,6 +31,8 @@ categories:
     ],
   ```
 
+<!-- more -->
+
 + 基本用法
     当sftp-config.json中的`upload_on_save`被设置成true时，该文件夹的的文件修改保存后，会自动连接到指定服务器，并在指定的目录下查找是否有相同文件名存在，如果存在，则会自动同步上去。（并未严格要求服务器目录和本地目录所有文件都一致）
 
@@ -68,7 +70,12 @@ js脚本自动检查工具。待调查。
 删除多余空格的插件。
 
 ## AutoFileName
-自动填充文件完整路径的插件。（暂时未明白其用法）
+自动填充文件完整路径的插件。
+
+```html
+<!-- 会逐次自动提示输入 assets css admin AdminLTE.css 同级目录洗所有文件和文件夹  -->
+<link rel="stylesheet" href="assets/css/admin/AdminLTE.css">
+```
 
 ## [HTML|CSS|JS Prettify](https://github.com/victorporof/Sublime-HTMLPrettify)
 HTML|CSS|JS|JSON格式化插件，其默认格式就不错。
