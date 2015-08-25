@@ -16,6 +16,8 @@ TortoiseGit要选择OpenSSH作为默认的控制台。可在TortoiseGit安装时
 ssh-agent bash
 ```
 
+<!-- more -->
+
 ## 本机配置方式
 
 当安装好Git环境后，运行 Git bash 命令，进入控制台，在用户目录下，会找到.gitconfig文件，其中包含了已经配置的name和email等信息。
