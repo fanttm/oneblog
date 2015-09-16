@@ -21,6 +21,8 @@ for (var key in json) {
 
 > 注意： for-in会输出自有属性，可以使用hasOwnProperty函数判断是否自有属性，并进行过滤。
 
+<!-- more -->
+
 ### jQuery-each
 
 ```
