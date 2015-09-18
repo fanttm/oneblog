@@ -8,6 +8,8 @@ categories:
 
 项目中，由于网络限制的原因，tcp服务的访问必须要经由某台服务器进行中转。因为现网环境不便测试，所以使用了redis进行haproxy的tcp代理功能的验证。
 
+[haproxy官网](http://www.haproxy.com/)
+
 ## 安装部署
 
 [haproxy下载地址](http://www.haproxy.org/download/1.5/src/)
@@ -20,6 +22,8 @@ make TARGET=linux26
 编译完成后，会在当前目录下生成可执行文件haproxy。
 
 ## haproxy的tcp代理配置
+
+[haproxy配置参考文档](https://cbonte.github.io/haproxy-dconv/configuration-1.5.html)
 
 可以从src/examples目录下找到haproxy.cfg文件，参照进行修改。
 
