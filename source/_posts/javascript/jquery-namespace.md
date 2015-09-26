@@ -37,15 +37,16 @@ function handler(event) {
     console.log("trigger event: " + event.namespace);
 }
 var $body = $("body");
-$body.on("doing.foo.bar.example", handler);
-$body.on("doing.foo.bar.", handler);
-$body.on("doing.foo.example", handler);
-$body.on("doing.foo.white", handler);
+$body.on("doing.foo.bar.example", handler);         // A
+$body.on("doing.foo.bar.", handler);                // B
+$body.on("doing.foo.example", handler);             // C
+$body.on("doing.foo.white", handler);               // D
 
-$body.trigger("doing");     // 输出四次 trigger event: 
+$body.trigger("doing");     // 触发ABCD，输出四次 trigger event: 
 $body.trigger(".foo");      // 没有输出
 $body.trigger("foo");       // 没有输出
-$body.trigger("doing.foo.example");     // 输出两次 trigger event: example.foo
+$body.trigger("doing.foo.bar.example"); // 触发A，输出 trigger event: bar.example.foo
+$body.trigger("doing.foo.example");     // 触发AC，输出两次 trigger event: example.foo
 $body.trigger("doing.bar.white");       // 没有输出（没有配置同时处于bar和white这两个命名空间的doing事件）
 
 ```
