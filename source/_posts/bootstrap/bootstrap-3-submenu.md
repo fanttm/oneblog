@@ -11,8 +11,6 @@ bootstrap 3.x为了尽可能多地支持移动设备，果断放弃了对submenu
 
 好在，github上已经有大神给出了解决方案，还行，请参见 [bootstrap-submenu](https://github.com/vsn4ik/bootstrap-submenu) 。
 
-[一个人的策展年代](/一个人的策展年代/)
-
 > 注意 2.0.0 版本的使用，同之前有所区别。使用之前版本的同学，在升级时需要注意用法上的变化。
 
 <!-- more -->

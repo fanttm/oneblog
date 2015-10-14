@@ -90,5 +90,8 @@ css: css
 js: js
 images: images
 
+# 微搜索
+tinysou_Key: 687c24b2b95cb1dec2df
+
 # Theme version
 version: 0.4.5.1

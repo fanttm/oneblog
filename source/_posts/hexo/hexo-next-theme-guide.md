@@ -2,7 +2,9 @@ title: hexo-next-theme使用指南
 date: 2015-08-24 14:26:56
 updated: 2015-08-24 14:27:02
 tags:
+- hexo
 categories:
+- hexo
 ---
 
 [Next主题的官方文档](http://theme-next.iissnan.com/)，非常详细，推荐！
