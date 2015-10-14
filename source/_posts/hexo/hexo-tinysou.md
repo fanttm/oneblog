@@ -17,19 +17,21 @@ categories:
 
 ## （步骤一）注册微搜索
 
-[微搜索](http://tinysou.com/)
+访问[微搜索](http://tinysou.com/)，并注册。
 
 ## （步骤二）创建搜索引擎
 
-![微搜索创建engine](/images/hexo-next-tinysou-create-engine.png)
+![创建engine](/images/hexo-next-tinysou-create-engine.png)
+![engine列表](/images/hexo-next-tinysou-engine-list.png)
 
 ## （步骤三）添加待搜索站点域名
 
+![在engine中添加待搜索站点域名](/images/hexo-next-tinysou-add-domain.png)
+![在engine中待搜索站点域名列表](/images/hexo-next-tinysou-domain-list.png)
 
-## （步骤四）启动搜索
+当域名对应的爬虫状态变为`finish`时，表示该站点的搜索索引已经创建完成。
 
-
-## （步骤五）HEXO配置
+## （步骤四）HEXO配置
 
 微搜索的配置，并非在HEXO的配置中，而是在其主题THEME的配置文件中设置。以NEXT主题为例，配置如下：
 
@@ -40,11 +42,13 @@ tinysou_Key: 687cxxxxxxxxxxxxx2df
 
 tinysou_Key的值，参照下图获取。
 
+![获取微搜索的KEY](/images/hexo-next-tinysou-get-enginekey.png)
 
 
-## （步骤六）开始搜索
+## （步骤五）开始搜索
 
-
+![搜索体验-1](/images/hexo-next-tinysou-try-1.png)
+![搜索体验-2](/images/hexo-next-tinysou-try-2.png)
 
 
 
