@@ -83,3 +83,10 @@ Array.from({length: 5}, (v, k) => k);
 ```
 
 
+```
+SVG.supported = (function() {
+  return !! document.createElementNS &&
+         !! document.createElementNS(SVG.ns,'svg').createSVGRect
+})()
+```
+
