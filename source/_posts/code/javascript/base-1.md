@@ -7,7 +7,7 @@ categories:
 ---
 
 [Javascript的连续赋值运算](http://www.iteye.com/topic/785445)
-实际工作中，应该不会遭遇如此写法的语句。
+实际工作中，应该不会有谁遭遇如此写法的语句。
 
 ```
 var a = {n:1};  
