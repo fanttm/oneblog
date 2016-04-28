@@ -32,3 +32,8 @@ keystone自动生成代码调查
 + [body-parser](https://www.npmjs.com/package/body-parser)
 + [multiparty](https://www.npmjs.com/package/multiparty)
 + [connect-multiparty](https://www.npmjs.com/package/connect-multiparty)
+
+### 其它工具
+
++ [OneAPM性能监控](http://news.oneapm.com/nodejs-express/)
++ [eslint代码风格管理插件](https://www.npmjs.com/package/eslint-config-airbnb)
