@@ -14,6 +14,7 @@ keystone自动生成代码调查
 [nodejs API](https://nodejs.org/docs/latest/api/) [中文](http://nodeapi.ucdok.com/#/api/)
 
 + [express-session](https://www.npmjs.com/package/express-session)
++ [passport](https://www.npmjs.com/package/passport)
 + [express-jwt](https://www.npmjs.com/package/express-jwt)
 + [jwt-simple](https://www.npmjs.com/package/jwt-simple)
 + [express-cluster](https://www.npmjs.com/package/express-cluster)
@@ -37,3 +38,6 @@ keystone自动生成代码调查
 
 + [OneAPM性能监控](http://news.oneapm.com/nodejs-express/)
 + [eslint代码风格管理插件](https://www.npmjs.com/package/eslint-config-airbnb)
++ [editorconfig](http://editorconfig.org/)
++ [sublime-editorconfig](https://packagecontrol.io/packages/EditorConfig)
++ supervisor
