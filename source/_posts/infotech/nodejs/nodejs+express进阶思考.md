@@ -33,6 +33,8 @@ keystone自动生成代码调查
 + [body-parser](https://www.npmjs.com/package/body-parser)
 + [multiparty](https://www.npmjs.com/package/multiparty)
 + [connect-multiparty](https://www.npmjs.com/package/connect-multiparty)
++ [mysql](https://www.npmjs.com/package/mysql)
++ [openshift-express](https://www.npmjs.com/package/openshift-express)
 
 ### 其它工具
 
@@ -40,4 +42,4 @@ keystone自动生成代码调查
 + [eslint代码风格管理插件](https://www.npmjs.com/package/eslint-config-airbnb)
 + [editorconfig](http://editorconfig.org/)
 + [sublime-editorconfig](https://packagecontrol.io/packages/EditorConfig)
-+ supervisor
++ [supervisor](https://www.npmjs.com/package/supervisor)
