@@ -1,9 +1,13 @@
 title: TortoiseGit访问Github无需输入密码配置方法（两种）
 date: 2015-08-25 10:00:37
-updated: 2015-08-25 10:00:41
+updated: 2016-05-09 17:58:48
 tags:
+- tortoiseGit
+- git
 categories:
+
 ---
+
 ## [Github官方指南](https://help.github.com/articles/generating-ssh-keys/)
 
 Git环境建议：Git+TortoiseGit+OpenSSH；

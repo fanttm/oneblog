@@ -3,9 +3,10 @@ date: 2015-08-19 09:17:18
 updated: 2015-08-19 09:17:23
 comments:
 tags:
-- sublime
+- sublime plugins
 categories:
 - sublime
+
 ---
 
 ## SFTP
@@ -15,7 +16,7 @@ categories:
 + 简单配置
   在sublime的sidebar中指定目录上右键， SFTP/FTP -> Map to Remote...，就会在该目录下生成sftp-config.json文件，配置参考如下：
 
-  ```bash
+```bash
     "upload_on_save": true,
 
     "host": "xxx.xxx.xxx.xxx",
@@ -29,7 +30,7 @@ categories:
         "sftp-settings\\.json", "/venv/", "\\.svn/", "\\.hg/", "\\.git/",
         "\\.bzr", "_darcs", "CVS", "\\.DS_Store", "Thumbs\\.db", "desktop\\.ini"
     ],
-  ```
+```
 
 <!-- more -->
 
@@ -45,7 +46,7 @@ categories:
 
 因此建议配置快捷键如下：
 
-```bash
+```json
 { "keys": ["ctrl+alt+left"], "command": "jump_back" },
 { "keys": ["ctrl+alt+right"], "command": "jump_forward" }
 ```
@@ -114,8 +115,18 @@ Sublime侧边栏功能增强插件。
 ## MarkdownEditing
 Markdown文本编辑插件。
 
-## InsertDate
+## [InsertDate](https://packagecontrol.io/packages/InsertDate)
 快速插入各种日期格式的插件。
+
+> 比如想设置按两次快捷键ctrl+f5，可以插入%Y-%m-%d %H:%M:%S格式的日期数据，可以在Preferences > Key Bindings - User文件中设置，如果不确定格式，可以参考Preferences -> Package Settings -> InsertDate下的Key Bindings相关设置
+
+```json
+  { 
+    "keys": ["ctrl+f5", "ctrl+f5"],
+      "command": "insert_date",
+      "args": {"format": "%Y-%m-%d %H:%M:%S"}
+  }
+```
 
 ## SublimeREPL
 直接执行脚本代码的插件。
