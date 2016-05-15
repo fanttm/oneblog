@@ -7,6 +7,13 @@ categories:
 
 ---
 
+## 获取代码
+
+获取指定tag的代码，如果要仅仅获取代码而没有.git，有第三方git-export命令可以使用，不过使用先git clone再删除.git文件夹的方式更为简单直接。
+```
+git clone --branch <tag_name> <repo_url>
+```
+
 ## 撤销
 
 ### git checkout
