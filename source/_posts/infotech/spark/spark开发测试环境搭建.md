@@ -110,7 +110,11 @@ export JAVA_HOME=/usr/local/jdk1.7.0_79
 ./bin/hdfs namenode -format
 ```
 
-结果输出倒数几行中，有```Storage directory /opt/hadoop/tmp/dfs/name has been successfully formatted```表示成功格式化。
+结果输出倒数几行中，有以下内容的表示成功格式化。
+
+```
+Storage directory /opt/hadoop/tmp/dfs/name has been successfully formatted
+```
 
 #### 启动namenode和datanode守护进程
 
@@ -129,13 +133,18 @@ Are you sure you want to continue connecting (yes/no)? yes
 
 #### 测试过程
 
-```
+```bash
 ./bin/hdfs dfs -mkdir -p /user/hadoop
 ./bin/hdfs dfs -mkdir /user/hadoop/input
 ./bin/hdfs dfs -put ./etc/hadoop/*.xml /user/hadoop/input
 ./bin/hdfs dfs -ls /user/hadoop/input
 ./bin/hadoop jar ./share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar grep input output 'dfs[a-z.]+'
 ```
+
+#### WEB访问
+
+访问http://localhost:50070/查看运行情况。
+
 
 ### spark单机部署
 
@@ -165,7 +174,7 @@ export HADOOP_CONF_DIR=/opt/hadoop-2.7.2/etc/hadoop
 
 #### 启动master和worker
 
-```
+```bash
 ./sbin/start-master.sh
 ./sbin/start-slave.sh spark://192.168.79.133:7077
 ```
@@ -196,3 +205,6 @@ val textFile = sc.textFile("hdfs://localhost:9000/user/spark/README.md")
 textFile.count()
 ```
 
+#### WEB访问
+
+访问http://localhost:8080/查看运行情况。
