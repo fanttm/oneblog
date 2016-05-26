@@ -11,7 +11,9 @@ categories:
 
 参考文档
 
-[Flume NG 简介及配置实战](http://my.oschina.net/leejun2005/blog/288136)  
+[Flume NG 简介及配置实战](http://my.oschina.net/leejun2005/blog/288136) 对于基本概念和入手操作讲解的很好
+
+多参考官方User Guide，大多数配置都有详细说明
 
 client
 
@@ -128,3 +130,68 @@ collectorMainAgent.sinks.k1.hdfs.callTimeout = 60000
 ./bin/flume-ng agent --conf ./conf/ -f ./conf/flume-server.conf -n collectorMainAgent -Dflume.root.logger=DEBUG,console
 ```
 
+
+
+the serializer is a class that converts the Flume Event into an HBase-friendly format.
+
+官方文档 
+[Streaming data into Apache HBase using Apache Flume](https://blogs.apache.org/flume/entry/streaming_data_into_apache_hbase)
+参考文档
+[Flume-ng将数据插入hdfs与HBase-0.96.0](http://www.aboutyun.com/thread-7912-1-1.html)
+
+```bash
+agent1.sinks.log-sink1.channel = ch1
+agent1.sinks.log-sink1.type = org.apache.flume.sink.hbase.AsyncHBaseSink
+agent1.sinks.log-sink1.table = flume
+agent1.sinks.log-sink1.columnFamily = logs
+agent1.sinks.log-sink1.column = info
+agent1.sinks.log-sink1.serializer = org.apache.flume.sink.hbase.SimpleAsyncHbaseEventSerializer
+```
+
+遭遇问题
+
+2016-05-26 10:31:57,450 (conf-file-poller-0) [ERROR - org.apache.flume.node.PollingPropertiesFileConfigurationProvider$FileWatcherRunnable.run(PollingPropertiesFileConfigurationProvider.java:145)] Failed to start agent because dependencies were not found in classpath. Error follows.
+java.lang.NoClassDefFoundError: org/apache/hadoop/hbase/HBaseConfiguration
+    at org.apache.flume.sink.hbase.AsyncHBaseSink.configure(AsyncHBaseSink.java:393)
+    at org.apache.flume.conf.Configurables.configure(Configurables.java:41)
+    at org.apache.flume.node.AbstractConfigurationProvider.loadSinks(AbstractConfigurationProvider.java:413)
+    at org.apache.flume.node.AbstractConfigurationProvider.getConfiguration(AbstractConfigurationProvider.java:98)
+    at org.apache.flume.node.PollingPropertiesFileConfigurationProvider$FileWatcherRunnable.run(PollingPropertiesFileConfigurationProvider.java:140)
+    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+    at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:304)
+    at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:178)
+    at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+    at java.lang.Thread.run(Thread.java:745)
+
+
+在./conf/flume-env.sh中加入```FLUME_CLASSPATH="/opt/hbase-1.2.1/lib/*"```即可解决该问题
+
+问题参考
+[Flume to HBase dependencie failure](http://stackoverflow.com/questions/28600781/flume-to-hbase-dependencie-failure)
+[Flume agent failed because dependencies were not found in classpath.](https://community.hortonworks.com/questions/22067/flume-agent-failed-because-dependencies-were-not-f.html)
+
+
+如果需要控制如何拆分字段到hbase指定的字段，则需要自行编写serializer代码HbaseEventSerializer类，在apache-flume-1.6.1-src/flume-ng-sinks/flume-ng-hbase-sink/src/main/java中定义自己的类，实现flume中的HbaseEventSerializer接口，需要重新编译来实现。
+
+
+## flume和kafka
+
+在flume 1.6中，才正式集成了flume-kafka插件（https://github.com/thilinamb/flume-ng-kafka-sink）
+
+```
+# kafka作为sink的配置
+a1.sinks.k1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.k1.topic = mytopic
+a1.sinks.k1.brokerList = localhost:9092
+a1.sinks.k1.requiredAcks = 1
+a1.sinks.k1.batchSize = 20
+a1.sinks.k1.channel = c1
+```
+
+### CDH相关配置
+
+参考文档 
++ [Flafka: Apache Flume Meets Apache Kafka for Event Processing](http://blog.cloudera.com/blog/2014/11/flafka-apache-flume-meets-apache-kafka-for-event-processing/)
++ [Using Kafka with Flume](http://www.cloudera.com/documentation/kafka/latest/topics/kafka_flume.html)

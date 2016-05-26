@@ -9,6 +9,10 @@ categories:
 
 ---
 
+## 部署
+
+用于测试建议使用单机部署，伪分布式部署可能会因为zookeeper不存在而报错。
+
 ## HBASE和Cassandra区别
 
 Hbase更加适合于数据仓库、大型数据的处理和分析（如进行Web页面的索引等），而Cassandra则更适合于实时事务处理和提供交互型数据
