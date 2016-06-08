@@ -16,8 +16,6 @@ categories:
 + [INFOQ-Spark的硬件配置](http://www.infoq.com/cn/news/2014/08/spark-hardware-configure)
 + [SPARK硬件配置](http://ju.outofmemory.cn/entry/74070)
 
-+ []()
-
 对于Hbase这样的低延迟的系统，就不要部署在同样的机器上面，避免干扰
 
 当Spark没办法把所有的内容放在内存中计算的时候，它会把部分内容存储到硬盘当中，如果该节点上也有HDFS目录，可以和HDFS共用同一个块磁盘

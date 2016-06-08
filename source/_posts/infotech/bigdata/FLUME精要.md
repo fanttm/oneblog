@@ -130,8 +130,6 @@ collectorMainAgent.sinks.k1.hdfs.callTimeout = 60000
 ./bin/flume-ng agent --conf ./conf/ -f ./conf/flume-server.conf -n collectorMainAgent -Dflume.root.logger=DEBUG,console
 ```
 
-
-
 the serializer is a class that converts the Flume Event into an HBase-friendly format.
 
 官方文档 

@@ -14,7 +14,9 @@ scala特点：面向对象、函数式、兼容Java、简洁、高级（代码�
 
 scala解释器
 
-变量定义，scala具有类型推断的能力，即根据输入的value判断变量的类型，但是类型一旦设定就不能改变？所谓静态类型；val一旦初始化则不能再被修改，
+变量定义，scala具有类型推断的能力，即根据输入的value判断变量的类型，但是类型一旦设定就不能改变？所谓静态类型；
+
+val设置的变量一旦初始化则不能再被修改，
 
 以下写法结果相同：
 val msg = "Hello world"
@@ -48,7 +50,7 @@ greetStrings作为new Array[String](3)不能被修改，但是可以给数组元
 
 Array：元素在物理上连续存储；
 List：元素在物理上的存储靠链表连接
-元组：存储不同类型的元素，比如作为返回值
+元组：存储不同类型的元素，比如作为函数返回值
 Set：唯一元素？
 Map：key-value
 
@@ -89,7 +91,13 @@ object Summer {
 }
 ```
 
-extends application
+Scala提供了特质scala.Application，可以减少一些输入工作，比如以下代码减少了main函数的定义，但也带来了两个限制，如下：
+
++ 无法访问命令行参数（因为args数组不可访问了）
++ 对于多线程程序需要自行编写main方法
++ 某些JVM的实现没有优化被Application特质执行的对象的初始化代码
+
+所以，只有当程序相对简单，并且是单线程情况下，才可以继承Application特质。
 
 ExtendApp.scala
 

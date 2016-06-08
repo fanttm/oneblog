@@ -1,26 +1,29 @@
-title: spark开发测试环境搭建
+title: HADOOP测试环境安装部署
 date: 2016-05-13 16:45:21
 updated: 2016-05-13 16:45:22
 comments:
 tags:
-- spark
+- hadoop
+- hdfs
 categories:
-- 
+- 大数据
 
 ---
 
 ## 参考文档
 
 + [Hadoop安装教程-单机和伪分布式部署](http://www.powerxing.com/install-hadoop/)
-+ [spark运行环境安装](http://www.w2bc.com/article/46602)
 
 ## JDK和SCALA环境部署 
 
-官网下载jdk（jdk-7u79-linux-x64.tar.gz）和scala（scala-2.10.6.tgz）后，解压移动到/usr/local目录下，在.bashrc末尾添加以下代码：
+> 注意：以下操作均使用root用户
+
+下载jdk（jdk-7u79-linux-x64.tar.gz）和scala（scala-2.10.6.tgz）后，将两者解压移动到/usr/local目录下，在~/.bashrc末尾添加以下代码：
 
 ```bash
 export JAVA_HOME=/usr/local/jdk1.7.0_79
-# IDEA_JDK是给IDEA使用的，只有设置了这个，IDEA采用使用专门的JDK环境
+# IDEA_JDK这个变量是给IDEA使用的，只有设置了这个，IDEA才能正常运行
+# IDEA2016版本需要使用JDK1.8（UBUNTU 1404）
 export IDEA_JDK=/usr/local/jdk1.8.0_91
 export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPATH=.:${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${JRE_HOME}/lib
@@ -29,11 +32,11 @@ export HADOOP_HOME=/opt/hadoop-2.7.2
 export PATH=${SCALA_HOME}/bin:${JAVA_HOME}/bin:${HADOOP_HOME}/bin:${PATH}
 ```
 
-> 注意scala版本必须是2.10.X，因为spark-1.6.1是如此要求的。
+> 注意scala版本必须是2.10.X（spark-1.6.1依赖）
 
-## HADOOP安装部署
+## HADOOP安装部署（伪分布式）
 
-### （单机）配置SSH无密码登录
+### SSH无密码登录配置
 
 ```bash
 cd ~/.ssh/                     # 若没有该目录，请先执行一次ssh localhost
@@ -45,7 +48,9 @@ cat ./id_rsa.pub >> ./authorized_keys  # 加入授权
 
 官网下载hadoop-2.7.2.tar.gz，解压后移动到/opt
 
-### 验证单机模式
+### 单机模式
+
+单机模式无需安装，可以直接运行。
 
 ```bash
 mkdir input
@@ -54,13 +59,13 @@ cp ./etc/hadoop/*.xml input
 # 正常执行完成后，查看output文件夹验证处理结果
 ```
 
-### 验证伪分布式
+### 伪分布式部署
 
 > 先删除之前用到的input和output文件夹（保持工作环境整洁）
 
 #### 文件配置
 
-配置三个文件core-site.xml、hdfs-site.xml、hadoop-env.sh，它们都位于./etc/hadoop目录下。
+配置三个文件core-site.xml、hdfs-site.xml、hadoop-env.sh，它们都位于./etc/hadoop目录下，配置内容如下：
 
 ##### core-site.xml
 
@@ -131,7 +136,19 @@ Are you sure you want to continue connecting (yes/no)? yes
 0.0.0.0: starting secondarynamenode, logging to /opt/hadoop-2.7.2/logs/hadoop-one-secondarynamenode-ubuntu.out
 ```
 
-#### 测试过程
+#### 测试验证
+
+jps查看进程
+
+```
+root@ubuntu:/opt/hadoop-2.7.2# jps
+2823 DataNode
+3167 Jps
+3021 SecondaryNameNode
+2691 NameNode
+```
+
+运行examples
 
 ```bash
 ./bin/hdfs dfs -mkdir -p /user/hadoop
@@ -141,70 +158,7 @@ Are you sure you want to continue connecting (yes/no)? yes
 ./bin/hadoop jar ./share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar grep input output 'dfs[a-z.]+'
 ```
 
-#### WEB访问
+#### WEB访问测试
 
 访问http://localhost:50070/查看运行情况。
 
-
-### spark单机部署
-
-#### 配置文件修改
-
-./conf/spark-env.sh
-
-```bash
-#JDK安装路径
-export JAVA_HOME=/usr/local/jdk1.7.0_79
-#SCALA安装路径
-export SCALA_HOME=/usr/local/scala-2.10.6
-#主节点的IP地址
-export SPARK_MASTER_IP=192.168.79.133
-#分配的内存大小
-# export SPARK_WORKER_MEMORY=200m
-#指定hadoop的配置文件目录
-export HADOOP_HOME=/opt/hadoop-2.7.2
-export HADOOP_CONF_DIR=/opt/hadoop-2.7.2/etc/hadoop
-#指定worker工作时分配cpu数量
-# export SPARK_WORKER_CORES=1
-#指定spark实例，一般1个足以
-# export SPARK_WORKER_INSTANCES=1
-#jvm操作，在spark1.0之后增加了spark-defaults.conf默认配置文件，该配置参数在默认配置在该文件中
-# export SPARK_JAVA_OPTS
-```
-
-#### 启动master和worker
-
-```bash
-./sbin/start-master.sh
-./sbin/start-slave.sh spark://192.168.79.133:7077
-```
-
-#### 查看进程
-
-```bash
-one@ubuntu:/opt/spark-1.6.1-bin-hadoop2.6$ jps
-48196 Jps
-47211 SecondaryNameNode
-46997 DataNode
-48015 Master
-48136 Worker
-46873 NameNode
-```
-
-> NameNode\SecondaryNameNode\DataNode是Hadoop相关进程
-> Master\Worker是spark相关进程
-
-#### 测试验证
-
-```bash
-hdfs dfs -mkdir /user/spark
-hdfs dfs -put README.md /user/spark
-
-./bin/spark-shell spark://192.168.79.133:7077
-val textFile = sc.textFile("hdfs://localhost:9000/user/spark/README.md")
-textFile.count()
-```
-
-#### WEB访问
-
-访问http://localhost:8080/查看运行情况。
