@@ -13,6 +13,7 @@ keystone自动生成代码调查
 [express 4.x API](http://expressjs.com/en/api.html) [中文](http://www.expressjs.com.cn/4x/api.html)
 [nodejs API](https://nodejs.org/docs/latest/api/) [中文](http://nodeapi.ucdok.com/#/api/)
 
++ [assetmanager](https://www.npmjs.com/package/assetmanager)
 + [express-session](https://www.npmjs.com/package/express-session)
 + [passport](https://www.npmjs.com/package/passport)
 + [express-jwt](https://www.npmjs.com/package/express-jwt)
