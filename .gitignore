@@ -1,4 +1,5 @@
 .DS_Store
+sftp-config.json
 Thumbs.db
 db.json
 *.log

@@ -1,12 +1,12 @@
 # Hexo Configuration
-## Docs: http://hexo.io/docs/configuration.html
+## Docs: https://hexo.io/docs/configuration.html
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
 title: 酱汁点滴
-subtitle:
-description:
-author: 酱汁
+subtitle: 记录生活工作的点滴进步
+description: 坚持记录，腾空大脑，放飞思想
+author: 刘凡
 language: zh-Hans
 timezone:
 
@@ -19,7 +19,7 @@ permalink_defaults:
 
 # Directory
 source_dir: source
-public_dir: ../public
+public_dir: public
 tag_dir: tags
 archive_dir: archives
 category_dir: categories
@@ -61,12 +61,19 @@ per_page: 10
 pagination_dir: page
 
 # Extensions
-## Plugins: http://hexo.io/plugins/
-## Themes: http://hexo.io/themes/
-#theme: tinnypp 
+## Plugins: https://hexo.io/plugins/
+plugin:
+- hexo-generator-feed
+#Feed Atom
+feed:
+type: atom
+path: atom.xml
+limit: 20
+
+## Themes: https://hexo.io/themes/
 theme: next
 
 # Deployment
-## Docs: http://hexo.io/docs/deployment.html
+## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type:
