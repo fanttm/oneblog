@@ -19,12 +19,15 @@ scala解释器
 val设置的变量一旦初始化则不能再被修改，
 
 以下写法结果相同：
+```
 val msg = "Hello world"
 val msg: String = "Hello world"
 val msg: java.lang.String = "Hello world"
+```
 
 函数定义
 
+```
 def max(x: Int, y: Int): Int = {
     if (x > y) x else y
 }
@@ -32,20 +35,24 @@ def max(x: Int, y: Int): Int = if (x > y) x else y
 
 def greeting() = println("Hello world")
 def greeting(): Unit = println("Hello world")
+```
 
 scala脚本 args args(0)
 
 函数式编程风格
 
+```
 args.foreach(arg => println(arg))
 args.foreach((arg: String) => println(arg))
 args.foreach(println)
+```
 
 类型参数化数组
 
+```
 val greetStrings = new Array[String](3)
 greetStrings(0) = "Hello"
-
+```
 greetStrings作为new Array[String](3)不能被修改，但是可以给数组元素赋值
 
 Array：元素在物理上连续存储；
@@ -56,6 +63,7 @@ Map：key-value
 
 函数式编程：没有副作用（println就是副作用之一）或var的函数
 
+```
 // 不推荐
 def printArgs(args: Array[String]): Unit = {
     args.foreach(println)
@@ -63,9 +71,11 @@ def printArgs(args: Array[String]): Unit = {
 // 推荐
 def formatArgs(args: Array[String]) = args.mkString("\n")
 println(formatArgs(args))
+```
 
 ## 类和对象
 
+```
 class ChecksumAccumulator {
     private var sum = 0
     def add(b: Byte) { sum += b }
@@ -78,6 +88,7 @@ object ChecksumAccumulator {
         ......
     }
 }
+```
 
 独立运行的scala程序，必须是object带有main方法，如下
 
@@ -106,5 +117,3 @@ object ExtendApp extends App {
   println("object ExtendApp")
 }
 ```
-
-
