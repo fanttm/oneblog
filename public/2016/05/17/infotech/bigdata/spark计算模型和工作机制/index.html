@@ -1,0 +1,849 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Spark站在巨人的肩膀上，依靠Scala强有力的函数式编程、Actor通信模式、闭包、容器、泛型，借助统一资源分配调度框架Mesos，融合了MapReduce和Dryad，最后产生了一个简洁、直观、灵活、高效的大数据分布式处理框架。
+
+与Hadoop不同，Spark一开始就瞄准性能，将数据（包括部分中间数据）放在内存，在内存中计算。用户将重复利用的数据缓存到内存，提高下次的计算效率，因此Spar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spark计算模型和工作机制">
+<meta property="og:url" content="http://oneblog.top/2016/05/17/infotech/bigdata/spark计算模型和工作机制/index.html">
+<meta property="og:site_name" content="酱汁点滴">
+<meta property="og:description" content="Spark站在巨人的肩膀上，依靠Scala强有力的函数式编程、Actor通信模式、闭包、容器、泛型，借助统一资源分配调度框架Mesos，融合了MapReduce和Dryad，最后产生了一个简洁、直观、灵活、高效的大数据分布式处理框架。
+
+与Hadoop不同，Spark一开始就瞄准性能，将数据（包括部分中间数据）放在内存，在内存中计算。用户将重复利用的数据缓存到内存，提高下次的计算效率，因此Spar">
+<meta property="og:updated_time" content="2016-05-17T08:17:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spark计算模型和工作机制">
+<meta name="twitter:description" content="Spark站在巨人的肩膀上，依靠Scala强有力的函数式编程、Actor通信模式、闭包、容器、泛型，借助统一资源分配调度框架Mesos，融合了MapReduce和Dryad，最后产生了一个简洁、直观、灵活、高效的大数据分布式处理框架。
+
+与Hadoop不同，Spark一开始就瞄准性能，将数据（包括部分中间数据）放在内存，在内存中计算。用户将重复利用的数据缓存到内存，提高下次的计算效率，因此Spar">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://oneblog.top/2016/05/17/infotech/bigdata/spark计算模型和工作机制/"/>
+
+
+
+
+
+  <title> spark计算模型和工作机制 | 酱汁点滴 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">酱汁点滴</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录生活工作的点滴进步</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://oneblog.top/2016/05/17/infotech/bigdata/spark计算模型和工作机制/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="刘凡">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/avatar.gif">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="酱汁点滴">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="酱汁点滴" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                spark计算模型和工作机制
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-17T17:17:30+09:00">
+                2016-05-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/05/17/infotech/bigdata/spark计算模型和工作机制/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/17/infotech/bigdata/spark计算模型和工作机制/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Spark站在巨人的肩膀上，依靠Scala强有力的函数式编程、Actor通信模式、闭包、容器、泛型，借助统一资源分配调度框架Mesos，融合了MapReduce和Dryad，最后产生了一个简洁、直观、灵活、高效的大数据分布式处理框架。</p>
+<blockquote>
+<p>与Hadoop不同，Spark一开始就瞄准性能，将数据（包括部分中间数据）放在内存，在内存中计算。用户将重复利用的数据缓存到内存，提高下次的计算效率，因此Spark尤其适合迭代型和交互型任务。Spark需要大量的内存，但性能可随着机器数目呈多线性增长。</p>
+</blockquote>
+<p>RDD操作起来与Scala集合类型没有太大差别，这就是Spark追求的目标：像编写单机程序一样编写分布式程序，但它们的数据和运行模型有很大的不同，用户需要具备更强的系统把控能力和分布式系统知识。</p>
+<p>用户程序对RDD通过多个函数进行操作，将RDD进行转换。Block-Manager管理RDD的物理分区，每个Block就是节点上对应的一个数据块，可以存储在内存或者磁盘。而RDD中的partition是一个逻辑数据块，对应相应的物理块Block。本质上一个RDD在代码中相当于是数据的一个元数据结构，存储着数据分区及其逻辑结构映射关系，存储着RDD之前的依赖转换关系。</p>
+<p>（1）RDD的两种创建方式<br>1）从Hadoop文件系统（或与Hadoop兼容的其他持久化存储系统，如Hive、<br>Cassandra、Hbase）输入（如HDFS）创建。<br>2）从父RDD转换得到新的RDD。<br>（2）RDD的两种操作算子<br>对于RDD可以有两种计算操作算子：Transformation（变换）与Action（行动）。<br>1）Transformation（变换）。<br>Transformation操作是延迟计算的，也就是说从一个RDD转换生成另一个RDD的转换操<br>作不是马上执行，需要等到有Actions操作时，才真正触发运算。<br>2）Action（行动）<br>Action算子会触发Spark提交作业（Job），并将数据输出到Spark系统。<br>（3）RDD的重要内部属性<br>1）分区列表。<br>2）计算每个分片的函数<br>3）对父RDD的依赖列表。<br>4）对Key-Value对数据类型RDD的分区器，控制分区策略和分区数。<br>5）每个数据分区的地址列表（如HDFS上的数据块的地址）。</p>
+<p>与DSM相比，RDD模型有两个优势。第一，对于RDD中的批量操作，运行时将根据数据<br>存放的位置来调度任务，从而提高性能。第二，对于扫描类型操作，如果内存不足以缓存整个RDD，就进行部分缓存，将内存容纳不下的分区存储到磁盘上。<br>另外，RDD支持粗粒度和细粒度的读操作。RDD上的很多函数操作（如count和collect等）都是批量读操作，即扫描整个数据集，可以将任务分配到距离数据最近的节点上。同时，RDD也支持细粒度操作，即在哈希或范围分区的RDD上执行关键字查找。</p>
+<p>在Transformations算子中再将数据类型维度细分为：Value数据类型和Key-Value对数据类型的Transformations算子。Value型数据的算子封装在RDD类中可以直接使用，Key-<br>Value对数据类型的算子封装于PairRDDFunctions类中，用户需要引入import org.apache.spark.SparkContext._才能够使用。进行这样的细分是由于不同的数据类型处理思想不太一样，同时有些算子是不同的。</p>
+<p>在物理上，RDD对象实质上是一个元数据结构，存储着Block、Node等的映射关系，以及其他的元数据信息。一个RDD就是一组分区，在物理数据存储上，RDD的每个分区对应的就是一个Block，Block可以存储在内存，当内存不够时可以存储到磁盘上。</p>
+<p>1）输入：在Spark程序运行中，数据从外部数据空间（如分布式存储：textFile读取HDFS等，parallelize方法输入Scala集合或数据）输入Spark，数据进入Spark运行时数据空间，转化为Spark中的数据块，通过BlockManager进行管理。<br>2）运行：在Spark数据输入形成RDD后便可以通过变换算子，如fliter等，对数据进行操<br>作并将RDD转化为新的RDD，通过Action算子，触发Spark提交作业。如果数据需要复用，<br>可以通过Cache算子，将数据缓存到内存。<br>3）输出：程序运行结束数据会输出Spark运行时空间，存储到分布式存储中（如saveAsTextFile输出到HDFS），或Scala数据或集合中（collect输出到Scala集合，count返回Scala int型数据）。</p>
+<p>大致可以分为三大类算子。<br>1）Value数据类型的Transformation算子，这种变换并不触发提交作业，针对处理的数<br>据项是Value型的数据。<br>2）Key-Value数据类型的Transfromation算子，这种变换并不触发提交作业，针对处理<br>的数据项是Key-Value型的数据对。<br>3）Action算子，这类算子会触发SparkContext提交Job作业。</p>
+<p>spark执行机制总览</p>
+<p>Spark应用提交后经历了一系列的转换，最后成为Task在每个节点上执行。Spark应用转<br>换（见图4-1）：RDD的Action算子触发Job的提交，提交到Spark中的Job生成RDD DAG，由<br>DAGScheduler转化为Stage DAG，每个Stage中产生相应的Task集合，TaskScheduler将任<br>务分发到Executor执行。每个任务对应相应的一个数据块，使用用户定义的函数处理数据<br>块。</p>
+<p>Spark执行的底层实现原理，如图4-2所示。在Spark的底层实现中，通过RDD进行数据<br>的管理，RDD中有一组分布在不同节点的数据块，当Spark的应用在对这个RDD进行操作<br>时，调度器将包含操作的任务分发到指定的机器上执行，在计算节点通过多线程的方式执行任务。一个操作执行完毕，RDD便转换为另一个RDD，这样，用户的操作依次执行。Spark<br>为了系统的内存不至于快速用完，使用延迟执行的方式执行，即只有操作累计到Action（行动），算子才会触发整个操作序列的执行，中间结果不会单独再重新分配内存，而是在同一个数据块上进行流水线操作。</p>
+<p>spark应用概念</p>
+<p>Spark应用（Application）是用户提交的应用程序。执行模式有Local、Standalone、YARN、Mesos。根据Spark Application的Driver Program是否在集群中运行，Spark应用的运行方式又可以分为Cluster模式和Client模式。图4-3为Application包含的组件。<br>应用的基本组件如下。<br>·Application：用户自定义的Spark程序，用户提交后，Spark为App分配资源，将程序转换并执行。<br>·Driver Program：运行Application的main（）函数并创建SparkContext。<br>·RDD Graph：RDD是Spark的核心结构，可以通过一系列算子进行操作（主要有Transformation和Action操作）。当RDD遇到Action算子时，将之前的所有算子形成一个有向无环图（DAG），也就是图中的RDD Graph。再在Spark中转化为Job，提交到集群执行。一个App中可以包含多个Job。<br>·Job：一个RDD Graph触发的作业，往往由Spark Action算子触发，在SparkContext中通过runJob方法向Spark提交Job。<br>·Stage：每个Job会根据RDD的宽依赖关系被切分很多Stage，每个Stage中包含一组相同的Task，这一组Task也叫TaskSet。<br>·Task：一个分区对应一个Task，Task执行RDD中对应Stage中包含的算子。Task被封装好后放入Executor的线程池中执行。</p>
+<p>应用提交方式</p>
+<p>·Driver进程运行在客户端，对应用进行管理监控。<br>·主节点指定某个Worker节点启动Driver，负责整个应用的监控。<br>Driver进程是应用的主控进程，负责应用的解析、切分Stage并调度Task到Executor执<br>行，包含DAGScheduler等重要对象。</p>
+<p>spark调度和任务分配</p>
+<p>从Spark整体上看，调度可以分为4个级别，Application调度、Job调度、Stage的调度、Task的调度与分发。</p>
+<p>spark的I/O机制：序列化、压缩、spark块管理</p>
+<p>spark通信模块：RPC RMI JMS EJB WEB-SERVICE（通信框架AKKA）</p>
+<p>容错机制 Lineage机制 + checkpoint</p>
+<p>此外，如果某个errors分区丢失，则Spark只在相应的lines分区上执行filter操作来重建该errors分区。，RDD的Lineage记录的是粗颗粒度的特定数据Transformation操作（如filter、map、join等）行为。当这个RDD的部分分区数据丢失时，它可以通过Lineage获取足够的信息来重新运算和恢复丢失的数据分区。</p>
+<p>检查点（本质是通过将RDD写入Disk做检查点）是为了通过lineage做容错的辅助，lineage过长会造成容错成本过高，这样就不如在中间阶段做检查点容错，如果之后有节点出现问题而丢失分区，从做检查点的RDD开始重做Lineage，就会减少开销。</p>
+<p>Shuffle的本义是洗牌、混洗，即把一组有一定规则的数据打散重新组合转换成一组无规则随机数据分区。Spark中的Shuffle更像是洗牌的逆过程，把一组无规则的数据尽量转换成一组具有一定规则的数据，Spark中的Shuffle和MapReduce中的Shuffle思想相同，在实现<br>节和优化方式上不同</p>
+<p>为什么Spark计算模型需要Shuffle过程？我们都知道，Spark计算模型是在分布式的环境下计算的，这就不可能在单进程空间中容纳所有的计算数据来进行计算，这样数据就按照Key进行分区，分配成一块一块的小分区，打散分布在集群的各个进程的内存空间中，并不是所有计算算子都满足于按照一种方式分区进行计算。例如，当需要对数据进行排序存储时，就有了重新按照一定的规则对数据重新分区的必要，Shuffle就是包裹在各种需要重分区的算子之下的一个对数据进行重新组合的过程。</p>
+<p>主要介绍了Spark的执行机制和调度机制，包括调度与任务分配机制、I/O机制、通信机制、容错机制和Shuffle机制。Spark在执行过程中由Driver控制应用生命周期。调度中，Spark采用了经典的FIFO和FAIR等调度算法对内部的资源实现不同级别的调度。在Spark的I/O中，将数据抽象以块为单位进行管理，RDD中的一个分区就是需要处理的一个块。集群中的通信对于命令和状态的传递极为重要，Spark通过AKKA框架进行集群消息通信。Spark通过Lineage和Checkpoint机制进行容错性保证，Lineage进行重算操作，Checkpoint进行数据冗余备份。最后介绍了Spark中的Shuffle机制，Spark也借鉴了MapReduce模型，但是其Shuffle机制进行了创新与优化。</p>
+<p>RDDs support two types of operations: transformations, which create a new dataset from an existing one, and actions, which return a value to the driver program after running a computation on the dataset. For example, map is a transformation that passes each dataset element through a function and returns a new RDD representing the results. On the other hand, reduce is an action that aggregates all the elements of the RDD using some function and returns the final result to the driver program (although there is also a parallel reduceByKey that returns a distributed dataset).</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/17/books/养眼就是养精神/" rel="next" title="养眼就是养精神">
+                <i class="fa fa-chevron-left"></i> 养眼就是养精神
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/05/23/books/写给程序员的数据挖掘实践指南/" rel="prev" title="写给程序员的数据挖掘实践指南">
+                写给程序员的数据挖掘实践指南 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/05/17/infotech/bigdata/spark计算模型和工作机制/"
+           data-title="spark计算模型和工作机制" data-url="http://oneblog.top/2016/05/17/infotech/bigdata/spark计算模型和工作机制/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="刘凡" />
+          <p class="site-author-name" itemprop="name">刘凡</p>
+          <p class="site-description motion-element" itemprop="description">坚持记录，腾空大脑，放飞思想</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">66</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="" target="_blank" title="知乎专栏">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎专栏
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="" target="_blank" title="豆瓣读书">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  豆瓣读书
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="" target="_blank" title="新浪微博">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  新浪微博
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">刘凡</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jiangzhi"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
