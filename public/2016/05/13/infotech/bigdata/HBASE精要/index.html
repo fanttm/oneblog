@@ -1,0 +1,928 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="hbase," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="HBASEHBASE经常被称作无模式数据库。
+HBASE是BigTable基于Hadoop的实现，目前HBASE主要应用在三种场景：
+
+增量数据
+内容服务（短链接、用户生产内容）
+信息交换（信息交换历史记录）
+
+其实后两者本质上也是“增量数据”
+部署用于测试建议使用单机部署，伪分布式部署可能会因为zookeeper不存在而报错。
+HBASE和Cassandra区别Hbase更加适合于数据仓库、大型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBASE基础">
+<meta property="og:url" content="http://oneblog.top/2016/05/13/infotech/bigdata/HBASE精要/index.html">
+<meta property="og:site_name" content="酱汁点滴">
+<meta property="og:description" content="HBASEHBASE经常被称作无模式数据库。
+HBASE是BigTable基于Hadoop的实现，目前HBASE主要应用在三种场景：
+
+增量数据
+内容服务（短链接、用户生产内容）
+信息交换（信息交换历史记录）
+
+其实后两者本质上也是“增量数据”
+部署用于测试建议使用单机部署，伪分布式部署可能会因为zookeeper不存在而报错。
+HBASE和Cassandra区别Hbase更加适合于数据仓库、大型">
+<meta property="og:updated_time" content="2016-05-13T08:35:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBASE基础">
+<meta name="twitter:description" content="HBASEHBASE经常被称作无模式数据库。
+HBASE是BigTable基于Hadoop的实现，目前HBASE主要应用在三种场景：
+
+增量数据
+内容服务（短链接、用户生产内容）
+信息交换（信息交换历史记录）
+
+其实后两者本质上也是“增量数据”
+部署用于测试建议使用单机部署，伪分布式部署可能会因为zookeeper不存在而报错。
+HBASE和Cassandra区别Hbase更加适合于数据仓库、大型">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://oneblog.top/2016/05/13/infotech/bigdata/HBASE精要/"/>
+
+
+
+
+
+  <title> HBASE基础 | 酱汁点滴 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">酱汁点滴</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">记录生活工作的点滴进步</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://oneblog.top/2016/05/13/infotech/bigdata/HBASE精要/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="刘凡">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/avatar.gif">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="酱汁点滴">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="酱汁点滴" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                HBASE基础
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-13T17:35:11+09:00">
+                2016-05-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <a href="/2016/05/13/infotech/bigdata/HBASE精要/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/13/infotech/bigdata/HBASE精要/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="HBASE"><a href="#HBASE" class="headerlink" title="HBASE"></a>HBASE</h2><p>HBASE经常被称作无模式数据库。</p>
+<p>HBASE是BigTable基于Hadoop的实现，目前HBASE主要应用在三种场景：</p>
+<ul>
+<li>增量数据</li>
+<li>内容服务（短链接、用户生产内容）</li>
+<li>信息交换（信息交换历史记录）</li>
+</ul>
+<p>其实后两者本质上也是“增量数据”</p>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>用于测试建议使用单机部署，伪分布式部署可能会因为zookeeper不存在而报错。</p>
+<h2 id="HBASE和Cassandra区别"><a href="#HBASE和Cassandra区别" class="headerlink" title="HBASE和Cassandra区别"></a>HBASE和Cassandra区别</h2><p>Hbase更加适合于数据仓库、大型数据的处理和分析（如进行Web页面的索引等），而Cassandra则更适合于实时事务处理和提供交互型数据</p>
+<p>Cassandra做的还不够好的一件事情就是MapReduce！对于不精通此项技术同学简单的解释一句，这是一个用于并行处理大量数据的系统，比如从上百万从网络上抓取的页面提取统计信息。MapReduce和相关系统，比如Pig和Hive可以和HBase一起良好协作，因为它使用HDFS来存储数据，这些系统也是设计用来使用HDFS的。如果你需要进行这样的数据处理和分析的话，HBase可能是你目前的最佳选择。</p>
+<h2 id="HBASE查询模式"><a href="#HBASE查询模式" class="headerlink" title="HBASE查询模式"></a>HBASE查询模式</h2><p>HBase的查询实现只提供两种方式：</p>
+<ul>
+<li>按指定RowKey获取唯一一条记录，get方法（org.apache.hadoop.hbase.client.Get）</li>
+<li>按指定的条件获取一批记录，scan方法（org.apache.hadoop.hbase.client.Scan）</li>
+</ul>
+<p>实现条件查询功能使用的就是scan方式，scan在使用时有以下几点值得注意：</p>
+<ul>
+<li>scan可以通过setCaching与setBatch方法提高速度（以空间换时间）；</li>
+<li>scan可以通过setStartRow与setEndRow来限定范围。范围越小，性能越高。<br>通过巧妙的RowKey设计使我们批量获取记录集合中的元素挨在一起（应该在同一个Region下），可以在遍历结果时获得很好的性能。</li>
+<li>scan可以通过setFilter方法添加过滤器，这也是分页、多条件查询的基础。</li>
+</ul>
+<p>HBase没有Query命令，查找某个特定值的记录的唯一办法，是使用扫描Scan命令读出表的某些部分，然后再使用过滤器Filter来得到有关记录。</p>
+<h3 id="HBase基本命令"><a href="#HBase基本命令" class="headerlink" title="HBase基本命令"></a>HBase基本命令</h3><p>HBase提供了5个基本命令，Get、Put、Delete、Scan、Increment。基于非行键值查询HBase的唯一方式是带过滤器的扫描。</p>
+<blockquote>
+<p>HBase中所有数据都是作为原始数据（raw data）使用字节数组的形式存储的。</p>
+</blockquote>
+<p>HBase增加了随机存取层，是HDFS缺失的部分，是对Hadoop的理想补充。</p>
+<p>HBase用于开发的安装建议使用单机部署，如果使用伪分布式部署，每次启动或运行shell时会报出zookeeper相关的错误</p>
+<p>HBase使用表作为顶级结构来存储数据，写数据到HBase，就是写数据到表。</p>
+<p>HBase使用put存储数据，使用get、scan读取数据。</p>
+<p>HBase可以存储每个数据单元的多个时间版本，默认版本数3个。</p>
+<h3 id="HBase数据模型"><a href="#HBase数据模型" class="headerlink" title="HBase数据模型"></a>HBase数据模型</h3><ul>
+<li>表（table）<br>HBase用表来组织数据，表名是字符串。</li>
+<li>行（row）<br>在表里，数据按照行存储。行由行键唯一标识，行键没有数据类型。</li>
+<li>列族（column family）<br>行里的数据按照列族分组。影响到HBase的物理存放，必须在事前定义，并且不轻易修改。表中每行拥有相同的列族，行不必在每个列族里存放数据，列族的名称也是字符串。</li>
+<li>列限定符（column qualifier）<br>列族里的数据通过列限定符或列来定位。列限定符不必事先定义，列限定符不必在不同行之间保持一致，列限定符没有数据类型，用字符串表示。</li>
+<li>单元（cell）<br>行键、列族和列限定符一起确定一个单元，单元里存储的值成为单元值，没有数据类型。</li>
+<li>时间版本（version）<br>单元值有时间版本，用时间戳标识。</li>
+</ul>
+<blockquote>
+<p>HBase = 无模式数据库，半结构化数据库<br>HBase不能实施关系约束，不支持多行事务</p>
+</blockquote>
+<p>过滤器可以应用到行键、列限定符和单元值（不包括列族），可以组合使用多个过滤器，过滤器允许对数据分页进行处理，限制扫描器返回的行数等等。</p>
+<p>列值递增（原子操作）？<br>单行操作是原子性的，给定行的多个写操作，总是以每个写操作为整体彼此独立的。<br>行间操作不是原子性的。</p>
+<p>HBase是一种专门为半结构化数据和水平可扩展性设计的数据库，是无模式数据库，也是无类型数据库，把所有数据不加解释地按照字节数组（Byte[]）存储。有5个基本命令用来访问HBase中的数据，即Get、Put、Delete、Scan和Increment。基于非行键值查询HBase的唯一办法是通过带过滤器的扫描。</p>
+<h3 id="工作机制"><a href="#工作机制" class="headerlink" title="工作机制"></a>工作机制</h3><h4 id="HBase写路径"><a href="#HBase写路径" class="headerlink" title="HBase写路径"></a>HBase写路径</h4><p>HBase执行写入时会写到两个地方：预写式日志（write-ahead log ~ WAL）和MemStore。</p>
+<p>MemStore是内存里的写入缓存区，HBase数据在永久写入硬盘之前在此累积，当其填满后，会写入硬盘生成一个HFile。HFile对应于列族，一个列族可以有多个HFile，但一个HFile不能存储多个列族的数据。</p>
+<p>HBase服务器宕机时，没有从MemStore写入HFile的数据，将可以通过回放WAL来恢复，该过程无需手工执行。</p>
+<h4 id="HBase读路径"><a href="#HBase读路径" class="headerlink" title="HBase读路径"></a>HBase读路径</h4><p>HBase读动作必须重新衔接持久化到硬盘上HFile和内存MemStore中的数据。HBase在读操作上使用了LRU缓存技术，也被叫做BlockCache，和MemStore在一个JVM堆里。BlockCache设计用来保存从HFile里读入内存的频繁访问的数据，每个列族都有自己的BlockCache。</p>
+<p>HFile的物理存放是一个Block的序列+这些Block的索引，Block是建立索引的最小数据单位，也是从硬盘读取的最小数据单位。</p>
+<p>从HBase中读取一行，首先会检查MemStore等待修改的队列，然后检查BlockCache看包含该行的Block是否最近被访问过，最后访问硬盘上对于的HFile。由于一个HFile只能存放一个列族的数据，因此为了获取一个完整行的数据，HBase可能需要读取多个HFile。</p>
+<h4 id="HBase删除"><a href="#HBase删除" class="headerlink" title="HBase删除"></a>HBase删除</h4><p>删除动作和写入动作相同，但是不会立即删除，只是做上标记，HBase后台会在合适的时候对HFile进行合并，此时才会真正删除。</p>
+<h4 id="HBase数据坐标"><a href="#HBase数据坐标" class="headerlink" title="HBase数据坐标"></a>HBase数据坐标</h4><p>HBase使用行键、列族、列限定符和时间版本定位一个单元，读取数据时，可以输入[行键]、[行键+列族]、[行键+列族+列限定符]、[行键+列族+列限定符+时间版本]，将分别获取指定范围的数据。单元坐标的维度越少，对应值的集合范围越广。</p>
+<h3 id="行键设计"><a href="#行键设计" class="headerlink" title="行键设计"></a>行键设计</h3><p>预期的数据访问模式对HBase的模式设计有很大的影响。在理想情况下，HBase中的表根据预期的模式来组织。行键是HBase中唯一的全局索引坐标，因此查询经常通过行键扫描实现。复合行键是支持这种扫描的常见做法。行键值经常希望是均衡分布的，通常采用MD5或SHA1等散列算法来实现。</p>
+<h4 id="案例一"><a href="#案例一" class="headerlink" title="案例一"></a>案例一</h4><p>行键设计：md5(用户名)+时间戳</p>
+<p>优点：行键的第一部分使用md5(用户名)的形式，使得用户数据以自然行的顺序有效地生成数据捅（bucket），即来自同一用户的数据以连续行的形式存储在一起。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/hbase/" rel="tag"># hbase</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/13/infotech/linux/ssh端口代理/" rel="next" title="SSH端口代理">
+                <i class="fa fa-chevron-left"></i> SSH端口代理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/05/13/infotech/bigdata/Spark集群硬件要求/" rel="prev" title="Spark集群硬件配置要求">
+                Spark集群硬件配置要求 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/05/13/infotech/bigdata/HBASE精要/"
+           data-title="HBASE基础" data-url="http://oneblog.top/2016/05/13/infotech/bigdata/HBASE精要/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="刘凡" />
+          <p class="site-author-name" itemprop="name">刘凡</p>
+          <p class="site-description motion-element" itemprop="description">坚持记录，腾空大脑，放飞思想</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">66</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="" target="_blank" title="知乎专栏">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎专栏
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="" target="_blank" title="豆瓣读书">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  豆瓣读书
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="" target="_blank" title="新浪微博">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  新浪微博
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HBASE"><span class="nav-number">1.</span> <span class="nav-text">HBASE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部署"><span class="nav-number">2.</span> <span class="nav-text">部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HBASE和Cassandra区别"><span class="nav-number">3.</span> <span class="nav-text">HBASE和Cassandra区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HBASE查询模式"><span class="nav-number">4.</span> <span class="nav-text">HBASE查询模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HBase基本命令"><span class="nav-number">4.1.</span> <span class="nav-text">HBase基本命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HBase数据模型"><span class="nav-number">4.2.</span> <span class="nav-text">HBase数据模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作机制"><span class="nav-number">4.3.</span> <span class="nav-text">工作机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase写路径"><span class="nav-number">4.3.1.</span> <span class="nav-text">HBase写路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase读路径"><span class="nav-number">4.3.2.</span> <span class="nav-text">HBase读路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase删除"><span class="nav-number">4.3.3.</span> <span class="nav-text">HBase删除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase数据坐标"><span class="nav-number">4.3.4.</span> <span class="nav-text">HBase数据坐标</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#行键设计"><span class="nav-number">4.4.</span> <span class="nav-text">行键设计</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#案例一"><span class="nav-number">4.4.1.</span> <span class="nav-text">案例一</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">刘凡</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"jiangzhi"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
